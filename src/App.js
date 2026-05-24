@@ -8,6 +8,7 @@ import axios from 'axios';
 import Register from './components/Register';
 import Login from "./components/Login";
 import Sidebar from "./components/Sidebar";
+import Settings from "./components/Settings";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -32,12 +33,32 @@ function App() {
   const [newPhoto, setNewPhoto] = useState(null);
   const [editPhoto, setEditPhoto] = useState(null);
   const [allComments, setAllComments] = useState([]);
+  const [userLocation, setUserLocation] = useState(() => {
+    const lat = localStorage.getItem("userLat");
+    const long = localStorage.getItem("userLong");
+    return lat && long ? { lat: parseFloat(lat), long: parseFloat(long) } : null;
+})
+  
 
-  const [viewState, setViewState] = useState({
-    latitude: 50.450001,
-    longitude: 30.523333,
-    zoom: 8
-  });
+  const [viewState, setViewState] = useState(() => {
+    const lat = localStorage.getItem("userLat");
+    const long = localStorage.getItem("userLong");
+    return {
+        latitude: lat ? parseFloat(lat) : 20,
+        longitude: long ? parseFloat(long) : 0,
+        zoom: lat ? 11 : 2,
+    };
+});
+
+  useEffect(() => {
+    if (userLocation) {
+      mapRef.current?.flyTo({
+        center: [userLocation.long, userLocation.lat],
+        zoom: 11,
+        duration: 1500,
+      });
+    }
+  }, [userLocation]);
 
   useEffect(() => {
     const getData = async () => {
@@ -101,8 +122,11 @@ function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    setUserLocation(null);
     localStorage.removeItem("user");
-  };
+    localStorage.removeItem("userLat");
+    localStorage.removeItem("userLong");
+};
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this pin?")) return;
@@ -225,14 +249,18 @@ function App() {
 
         <div className="nav-buttons">
           {currentUser ? (
-            <button className="btn logout" onClick={handleLogout}>Log Out</button>
+            <Settings
+              currentUser={currentUser}
+              onLogout={handleLogout}
+              setUserLocation={setUserLocation}
+            />
           ) : (
             <>
               <button className="btn login" onClick={() => setShowLogin(true)}>Log In</button>
               <button className="btn register" onClick={() => setShowRegister(true)}>Register</button>
             </>
           )}
-          {showLogin && <Login onClose={() => setShowLogin(false)} setCurrentUser={setCurrentUser} />}
+          {showLogin && <Login onClose={() => setShowLogin(false)} setCurrentUser={setCurrentUser} setUserLocation={setUserLocation} />}
           {showRegister && <Register onClose={() => setShowRegister(false)} />}
           {showLoginAlert && (
             <div className="login-alert">

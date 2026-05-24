@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import axios from "axios";
 import "./login.css";
 
-export default function Login({ onClose, setCurrentUser }) {
+export default function Login({ onClose, setCurrentUser, setUserLocation }) {
     const [error, setError] = useState(null);
     const loginRef = useRef();
     const passwordRef = useRef();
@@ -21,7 +21,18 @@ export default function Login({ onClose, setCurrentUser }) {
                 password: passwordRef.current.value
             });
             setCurrentUser(res.data.username);
-            localStorage.setItem("user", res.data.username);
+                localStorage.setItem("user", res.data.username);
+
+                if (res.data.lat && res.data.long) {
+                    setUserLocation({ lat: res.data.lat, long: res.data.long });
+                    localStorage.setItem("userLat", res.data.lat);
+                    localStorage.setItem("userLong", res.data.long);
+                }
+
+            if (res.data.lat && res.data.long) {
+                setUserLocation({ lat: res.data.lat, long: res.data.long });
+            }
+
             setError(null);
             onClose();
         } catch (err) {
