@@ -1,0 +1,151 @@
+.comments-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.comment {
+    background: #f4f4f4;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.comment-author {
+    font-size: 13px;
+    font-weight: 700;
+    color: #222;
+}
+
+.comment-says {
+    font-size: 13px;
+    color: #aaa;
+    font-style: italic;
+    margin-right: auto;
+    padding-left: 2px;
+}
+
+.stars {
+    display: flex;
+    align-items: center;
+}
+
+.comment-text {
+    margin: 0;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+    font-style: italic;
+}
+
+.comment-date {
+    margin: 0;
+    font-size: 11px;
+    color: #ccc;
+}
+
+.comment-photos {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.comment-photo {
+    height: 60px;
+    width: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.comment-form h6 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #aaa;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.comment-input {
+    padding: 8px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 13px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    background: #fff;
+}
+
+.comment-input:focus {
+    border-color: slateblue;
+}
+
+.comment-btn {
+    padding: 8px;
+    background: rgba(106, 90, 205, 0.1);
+    color: slateblue;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.comment-btn:hover {
+    background: rgba(106, 90, 205, 0.18);
+}
+
+.comment-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.save-btn {
+    padding: 5px 12px;
+    background: rgba(106, 90, 205, 0.1);
+    color: slateblue;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.cancel-btn {
+    padding: 5px 12px;
+    background: #f0f0f0;
+    color: #888;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.no-comments {
+    font-size: 12px;
+    color: #ccc;
+    margin: 0;
+}
+
+.error-message {
+    font-size: 12px;
+    color: #dc3545;
+}
