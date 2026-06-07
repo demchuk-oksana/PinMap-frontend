@@ -9,6 +9,7 @@ import Register from './components/Register';
 import Login from "./components/Login";
 import Sidebar from "./components/Sidebar";
 import Settings from "./components/Settings";
+import PinDropIcon from '@mui/icons-material/PinDrop';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -36,17 +37,15 @@ function App() {
   const [userLocation, setUserLocation] = useState(() => {
     const lat = localStorage.getItem("userLat");
     const long = localStorage.getItem("userLong");
-    return lat && long ? { lat: parseFloat(lat), long: parseFloat(long) } : null;
-})
-  
-
+    return lat && long ? { lat: parseFloat(lat), long: parseFloat(long) } : null;})
+  const [myLocation, setMyLocation] = useState(null);
   const [viewState, setViewState] = useState(() => {
     const lat = localStorage.getItem("userLat");
     const long = localStorage.getItem("userLong");
     return {
         latitude: lat ? parseFloat(lat) : 20,
         longitude: long ? parseFloat(long) : 0,
-        zoom: lat ? 11 : 2,
+        zoom: lat ? 14 : 2,
     };
 });
 
@@ -54,7 +53,7 @@ function App() {
     if (userLocation) {
       mapRef.current?.flyTo({
         center: [userLocation.long, userLocation.lat],
-        zoom: 11,
+        zoom: 14,
         duration: 1500,
       });
     }
@@ -75,6 +74,31 @@ function App() {
     };
     getData();
   }, []);
+
+ useEffect(() => {
+    const watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+            setMyLocation({
+                lat: pos.coords.latitude,
+                long: pos.coords.longitude,
+            });
+        },
+        (err) => console.log("Geolocation error:", err),
+        { enableHighAccuracy: true }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+}, []);
+
+const handleCenterMe = () => {
+    if (myLocation) {
+        mapRef.current?.flyTo({
+            center: [myLocation.long, myLocation.lat],
+            zoom: 15,
+            duration: 1000,
+        });
+    }
+};
 
   const handleAddClick = (e) => {
     e.preventDefault();
@@ -208,6 +232,12 @@ function App() {
           </React.Fragment>
         ))}
 
+        {myLocation && (
+          <Marker longitude={myLocation.long} latitude={myLocation.lat} anchor="center">
+            <div className="my-location-dot" />
+          </Marker>
+        )}
+
         {newPlace && (
           <Popup
             longitude={newPlace.long}
@@ -268,6 +298,12 @@ function App() {
             </div>
           )}
         </div>
+
+        {myLocation && (
+          <button className="center-me-btn" onClick={handleCenterMe}>
+             <PinDropIcon style={{ fontSize: 22, color: '#4285f4' }} />
+          </button>
+        )}
       </Map>
 
       <Sidebar

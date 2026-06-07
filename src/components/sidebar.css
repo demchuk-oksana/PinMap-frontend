@@ -111,10 +111,10 @@
 
 /* BODY */
 .sidebar-body {
-    padding: 16px 20px;
+    padding: 20px 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 20px;
 }
 
 /* DESCRIPTION з "says" */
@@ -262,3 +262,107 @@
 .lightbox-arrow:hover { background: rgba(255,255,255,0.3); }
 .lightbox-arrow.left { left: 24px; }
 .lightbox-arrow.right { right: 24px; }
+
+/* EDIT FORM */
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+}
+
+.edit-form .form-input,
+.edit-form .form-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    background: #f7f7f7;
+    transition: border-color 0.2s, background 0.2s;
+    font-family: inherit;
+}
+
+.edit-form .form-input:focus,
+.edit-form .form-textarea:focus {
+    border-color: slateblue;
+    background: white;
+}
+
+.edit-form .form-textarea {
+    resize: none;
+    line-height: 1.6;
+}
+
+.edit-preview-photo {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.edit-form input[type="file"] {
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+}
+
+.edit-form input[type="file"]::file-selector-button {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(106, 90, 205, 0.1);
+    color: slateblue;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 10px;
+    transition: background 0.2s;
+}
+
+.edit-form input[type="file"]::file-selector-button:hover {
+    background: rgba(106, 90, 205, 0.18);
+}
+
+.edit-form .star-rating {
+    display: flex;
+    gap: 4px;
+}
+
+.edit-form .card-actions {
+    margin-top: 4px;
+}
+
+.edit-form .form-btn {
+    padding: 10px 20px;
+    background-color: slateblue;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.edit-form .form-btn:hover {
+    background-color: #5a4fcf;
+}
+
+.edit-form .cancel-btn {
+    padding: 10px 20px;
+    background: #f0f0f0;
+    color: #555;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.edit-form .cancel-btn:hover {
+    background: #e0e0e0;
+}
