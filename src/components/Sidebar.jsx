@@ -70,7 +70,7 @@ export default function Sidebar({
 
                 {editingPin === pin._id ? (
                     <div className="sidebar-body">
-                        <form onSubmit={handleEdit}>
+                        <form className="edit-form" onSubmit={handleEdit}>
                             <input
                                 className="form-input"
                                 defaultValue={pin.title}
