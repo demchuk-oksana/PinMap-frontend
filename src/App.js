@@ -23,6 +23,8 @@ function App() {
   const [newRating, setNewRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const mapRef = useRef(null);
+  const isMobile =
+  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("user") || null);
   const [pins, setPins] = useState([]);
   const [newPlace, setNewPlace] = useState(null);
@@ -50,21 +52,7 @@ function App() {
     };
 });
   const [showWelcome, setShowWelcome] = useState(!localStorage.getItem("user"));
-  const longPressTimer = useRef(null);
-
-  const handleTouchStart = (e) => {
-    longPressTimer.current = setTimeout(() => {
-        const touch = e.touches[0];
-        const map = mapRef.current;
-        if (!map) return;
-        const rect = map.getCanvas().getBoundingClientRect();
-        const point = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
-        const lngLat = map.unproject(point);
-        handleAddClick({ preventDefault: () => {}, lngLat });
-    }, 600);
-};
-
-  const handleTouchEnd = () => clearTimeout(longPressTimer.current);
+  
 
   useEffect(() => {
     if (currentUser) setShowWelcome(false);
@@ -219,22 +207,27 @@ const handleCenterMe = () => {
 
   return (
     <div className="App">
-      <Map ref={mapRef}
-        {...viewState}
-        onMove={evt => setViewState(evt.viewState)}
-        style={{ width: '100vw', height: '100vh' }}
-        mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/mapbox/streets-v11"
-        projection="mercator"
-        maxPitch={0}
-        dragRotate={false}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={() => clearTimeout(longPressTimer.current)}
-        onClick={() => {
-          setSelectedPin(null);
-          setNewPlace(null);
-        }}
+      <Map
+  ref={mapRef}
+  {...viewState}
+  onMove={evt => setViewState(evt.viewState)}
+  style={{ width: '100vw', height: '100vh' }}
+  mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+  mapStyle="mapbox://styles/mapbox/streets-v11"
+  projection="mercator"
+  maxPitch={0}
+  dragRotate={false}
+  onClick={(e) => {
+    setSelectedPin(null);
+
+    if (isMobile) {
+      handleAddClick(e);
+    } else {
+      setNewPlace(null);
+    }
+  }}
+  onContextMenu={isMobile ? undefined : handleAddClick}
+>
         onContextMenu={handleAddClick}
       >
         {pins.map((p) => (
