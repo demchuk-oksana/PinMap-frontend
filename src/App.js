@@ -10,6 +10,7 @@ import Login from "./components/Login";
 import Sidebar from "./components/Sidebar";
 import Settings from "./components/Settings";
 import PinDropIcon from '@mui/icons-material/PinDrop';
+import Welcome from "./components/Welcome";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -48,6 +49,26 @@ function App() {
         zoom: lat ? 14 : 2,
     };
 });
+  const [showWelcome, setShowWelcome] = useState(!localStorage.getItem("user"));
+  const longPressTimer = useRef(null);
+
+  const handleTouchStart = (e) => {
+    longPressTimer.current = setTimeout(() => {
+        const touch = e.touches[0];
+        const map = mapRef.current;
+        if (!map) return;
+        const rect = map.getCanvas().getBoundingClientRect();
+        const point = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+        const lngLat = map.unproject(point);
+        handleAddClick({ preventDefault: () => {}, lngLat });
+    }, 600);
+};
+
+  const handleTouchEnd = () => clearTimeout(longPressTimer.current);
+
+  useEffect(() => {
+    if (currentUser) setShowWelcome(false);
+  }, [currentUser]);
 
   useEffect(() => {
     if (userLocation) {
@@ -207,6 +228,9 @@ const handleCenterMe = () => {
         projection="mercator"
         maxPitch={0}
         dragRotate={false}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={() => clearTimeout(longPressTimer.current)}
         onClick={() => {
           setSelectedPin(null);
           setNewPlace(null);
@@ -277,33 +301,38 @@ const handleCenterMe = () => {
           </Popup>
         )}
 
-        <div className="nav-buttons">
-          {currentUser ? (
-            <Settings
-              currentUser={currentUser}
-              onLogout={handleLogout}
-              setUserLocation={setUserLocation}
-            />
-          ) : (
-            <>
-              <button className="btn login" onClick={() => setShowLogin(true)}>Log In</button>
-              <button className="btn register" onClick={() => setShowRegister(true)}>Register</button>
-            </>
-          )}
-          {showLogin && <Login onClose={() => setShowLogin(false)} setCurrentUser={setCurrentUser} setUserLocation={setUserLocation} />}
-          {showRegister && <Register onClose={() => setShowRegister(false)} />}
-          {showLoginAlert && (
-            <div className="login-alert">
-              Please log in to add a pin.
-            </div>
-          )}
-        </div>
-
-        {myLocation && (
-          <button className="center-me-btn" onClick={handleCenterMe}>
-             <PinDropIcon style={{ fontSize: 22, color: '#4285f4' }} />
-          </button>
+         <div className="nav-buttons">
+        {currentUser ? (
+          <Settings
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            setUserLocation={setUserLocation}
+          />
+        ) : (
+          <>
+            {!showWelcome && (
+              <>
+                <button className="btn login" onClick={() => setShowLogin(true)}>Log In</button>
+                <button className="btn register" onClick={() => setShowRegister(true)}>Register</button>
+              </>
+            )}
+          </>
         )}
+        {showLogin && <Login onClose={() => setShowLogin(false)} setCurrentUser={setCurrentUser} setUserLocation={setUserLocation} />}
+        {showRegister && <Register onClose={() => setShowRegister(false)} />}
+        {showLoginAlert && (
+          <div className="login-alert">
+            Please log in to add a pin.
+          </div>
+        )}
+      </div>
+
+      {myLocation && (
+        <button className="center-me-btn" onClick={handleCenterMe}>
+          <PinDropIcon style={{ fontSize: 22, color: '#4285f4' }} />
+        </button>
+      )}
+      
       </Map>
 
       <Sidebar
@@ -330,6 +359,15 @@ const handleCenterMe = () => {
         pins={pins}
         setSelectedPin={setSelectedPin}
       />
+
+      {showWelcome && (
+    <Welcome
+        setCurrentUser={setCurrentUser}
+        setUserLocation={setUserLocation}
+        onGuest={() => setShowWelcome(false)}
+    />
+    )}
+
     </div>
   );
 }
