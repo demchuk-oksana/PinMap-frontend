@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Map, { Marker, Popup } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import RoomIcon from '@mui/icons-material/Room';
-import StarIcon from '@mui/icons-material/Star';
 import './App.css';
 import axios from 'axios';
 import Register from './components/Register';
@@ -11,6 +10,9 @@ import Sidebar from "./components/Sidebar";
 import Settings from "./components/Settings";
 import PinDropIcon from '@mui/icons-material/PinDrop';
 import Welcome from "./components/Welcome";
+import EditLocationIcon from '@mui/icons-material/EditLocation';
+import StarIcon from '@mui/icons-material/Star';
+
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -23,6 +25,7 @@ function App() {
   const [newRating, setNewRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const mapRef = useRef(null);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("user") || null);
   const [pins, setPins] = useState([]);
   const [newPlace, setNewPlace] = useState(null);
@@ -35,36 +38,28 @@ function App() {
   const [newPhoto, setNewPhoto] = useState(null);
   const [editPhoto, setEditPhoto] = useState(null);
   const [allComments, setAllComments] = useState([]);
+  const [myLocation, setMyLocation] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(!localStorage.getItem("user"));
+  const [showMobileForm, setShowMobileForm] = useState(false);
+  const [previewPin, setPreviewPin] = useState(null);
+
   const [userLocation, setUserLocation] = useState(() => {
     const lat = localStorage.getItem("userLat");
     const long = localStorage.getItem("userLong");
-    return lat && long ? { lat: parseFloat(lat), long: parseFloat(long) } : null;})
-  const [myLocation, setMyLocation] = useState(null);
+    return lat && long ? { lat: parseFloat(lat), long: parseFloat(long) } : null;
+  })
+
   const [viewState, setViewState] = useState(() => {
     const lat = localStorage.getItem("userLat");
     const long = localStorage.getItem("userLong");
     return {
-        latitude: lat ? parseFloat(lat) : 20,
-        longitude: long ? parseFloat(long) : 0,
-        zoom: lat ? 14 : 2,
+      latitude: lat ? parseFloat(lat) : 20,
+      longitude: long ? parseFloat(long) : 0,
+      zoom: lat ? 14 : 2,
     };
-});
-  const [showWelcome, setShowWelcome] = useState(!localStorage.getItem("user"));
-  const longPressTimer = useRef(null);
+  });
 
-  const handleTouchStart = (e) => {
-    longPressTimer.current = setTimeout(() => {
-        const touch = e.touches[0];
-        const map = mapRef.current;
-        if (!map) return;
-        const rect = map.getCanvas().getBoundingClientRect();
-        const point = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
-        const lngLat = map.unproject(point);
-        handleAddClick({ preventDefault: () => {}, lngLat });
-    }, 600);
-};
 
-  const handleTouchEnd = () => clearTimeout(longPressTimer.current);
 
   useEffect(() => {
     if (currentUser) setShowWelcome(false);
@@ -96,41 +91,53 @@ function App() {
     getData();
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-            setMyLocation({
-                lat: pos.coords.latitude,
-                long: pos.coords.longitude,
-            });
-        },
-        (err) => console.log("Geolocation error:", err),
-        { enableHighAccuracy: true }
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-}, []);
-
-const handleCenterMe = () => {
-    if (myLocation) {
-        mapRef.current?.flyTo({
-            center: [myLocation.long, myLocation.lat],
-            zoom: 15,
-            duration: 1000,
+      (pos) => {
+        setMyLocation({
+          lat: pos.coords.latitude,
+          long: pos.coords.longitude,
         });
+      },
+      (err) => console.log("Geolocation error:", err),
+      { enableHighAccuracy: true }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  const handleCenterMe = () => {
+    if (myLocation) {
+      mapRef.current?.flyTo({
+        center: [myLocation.long, myLocation.lat],
+        zoom: 15,
+        duration: 1000,
+      });
     }
-};
+  };
 
   const handleAddClick = (e) => {
-    e.preventDefault();
-    if (!currentUser) {
-      setShowLoginAlert(true);
-      setTimeout(() => setShowLoginAlert(false), 3000);
-      return;
-    }
-    const { lng, lat } = e.lngLat;
-    setNewPlace({ long: lng, lat: lat });
-  };
+  e.preventDefault();
+
+  if (!currentUser) {
+    setShowLoginAlert(true);
+    setTimeout(() => setShowLoginAlert(false), 3000);
+    return;
+  }
+
+  const { lng, lat } = e.lngLat;
+
+  setNewPlace({ long: lng, lat });
+  setPreviewPin({ long: lng, lat });
+
+   if (isMobile) {
+    setShowMobileForm(true);
+    mapRef.current?.flyTo({
+      center: [lng, lat],
+      offset: [0, -100],
+      duration: 500,
+    });
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -160,6 +167,9 @@ const handleCenterMe = () => {
       SetDesc("");
       setNewRating(0);
       setNewPhoto(null);
+      setNewPlace(null);
+      setPreviewPin(null);
+      setShowMobileForm(false);
     } catch (err) {
       console.log(err);
     }
@@ -171,7 +181,7 @@ const handleCenterMe = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("userLat");
     localStorage.removeItem("userLong");
-};
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this pin?")) return;
@@ -219,7 +229,8 @@ const handleCenterMe = () => {
 
   return (
     <div className="App">
-      <Map ref={mapRef}
+      <Map
+        ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         style={{ width: '100vw', height: '100vh' }}
@@ -228,21 +239,30 @@ const handleCenterMe = () => {
         projection="mercator"
         maxPitch={0}
         dragRotate={false}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={() => clearTimeout(longPressTimer.current)}
-        onClick={() => {
+        onClick={(e) => {
           setSelectedPin(null);
-          setNewPlace(null);
+          if (isMobile) {
+            if (!showMobileForm) {
+              handleAddClick(e);
+            } else {
+              setShowMobileForm(false);
+              setNewPlace(null);
+              setPreviewPin(null);
+            }
+          } else {
+            setNewPlace(null);
+            setPreviewPin(null);
+          }
         }}
-        onContextMenu={handleAddClick}
+        onContextMenu={isMobile ? undefined : handleAddClick}
       >
         {pins.map((p) => (
           <React.Fragment key={p._id}>
             <Marker longitude={p.long} latitude={p.lat} anchor="bottom">
               <RoomIcon
-                style={{ fontSize: viewState.zoom * 3, color: 'slateblue', cursor: 'pointer' }}
-                onClick={(e) => {
+                  style={{ fontSize: viewState.zoom * 3, color: 'slateblue', cursor: 'pointer' }}
+                  className={selectedPin?._id === p._id ? 'pin-selected' : ''}
+                  onClick={(e) => {
                   e.stopPropagation();
                   setSelectedPin(p);
                   setEditingPin(null);
@@ -255,84 +275,162 @@ const handleCenterMe = () => {
             </Marker>
           </React.Fragment>
         ))}
-
+        {previewPin && (
+          <Marker longitude={previewPin.long} latitude={previewPin.lat} anchor="bottom">
+            <div className="preview-pin">
+              <EditLocationIcon
+                className="preview-pin-icon"
+                style={{ fontSize: viewState.zoom * 3, color: 'slateblue' }}
+              />
+            </div>
+          </Marker>
+        )}
         {myLocation && (
           <Marker longitude={myLocation.long} latitude={myLocation.lat} anchor="center">
             <div className="my-location-dot" />
           </Marker>
         )}
 
-        {newPlace && (
-          <Popup
+        {newPlace && !isMobile && (
+          <Popup 
             longitude={newPlace.long}
             latitude={newPlace.lat}
             anchor="left"
             closeButton={true}
             closeOnClick={false}
-            onClose={() => setNewPlace(null)}
+            onClose={() => {
+              setNewPlace(null);
+              setPreviewPin(null);
+            }}
           >
             <form className="new-pin-form" onSubmit={handleSubmit}>
               <h3>Add a Pin</h3>
-              <input className="form-input" placeholder="Title" onChange={(e) => SetTitle(e.target.value)} />
-              <textarea className="form-textarea" placeholder="Say something about this place..." rows={3} onChange={(e) => SetDesc(e.target.value)} />
+
               <input
                 className="form-input"
+                placeholder="Title"
+                onChange={(e) => SetTitle(e.target.value)}
+              />
+
+              <textarea
+                className="form-textarea"
+                placeholder="Say something..."
+                rows={3}
+                onChange={(e) => SetDesc(e.target.value)}
+              />
+
+              <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setNewPhoto(e.target.files[0])}
               />
               <div className="star-rating">
-                {Array(5).fill(0).map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    style={{
-                      color: i < (hoverRating || newRating) ? 'gold' : 'lightgray',
-                      cursor: 'pointer',
-                      fontSize: 28
-                    }}
-                    onClick={() => setNewRating(i + 1)}
-                    onMouseEnter={() => setHoverRating(i + 1)}
-                    onMouseLeave={() => setHoverRating(0)}
-                  />
-                ))}
+                  {Array(5).fill(0).map((_, i) => (
+                    <StarIcon
+                      key={i}
+                      style={{
+                        color: i < (hoverRating || newRating) ? 'gold' : 'lightgray',
+                        cursor: 'pointer',
+                        fontSize: 28
+                      }}
+                      onClick={() => setNewRating(i + 1)}
+                      onMouseEnter={() => setHoverRating(i + 1)}
+                      onMouseLeave={() => setHoverRating(0)}
+                    />
+                  ))}
               </div>
-              <button className="form-btn" type="submit">Add Pin</button>
+              <button type="submit" className="form-btn">
+                Add Pin
+              </button>
             </form>
           </Popup>
         )}
 
-         <div className="nav-buttons">
-        {currentUser ? (
-          <Settings
-            currentUser={currentUser}
-            onLogout={handleLogout}
-            setUserLocation={setUserLocation}
+        {showMobileForm && newPlace && isMobile && (
+  <div className="bottom-sheet">
+    <div className="bottom-sheet-handle" />
+    <form className="bottom-sheet-form" onSubmit={handleSubmit}>
+      <h3> Add a Pin</h3>
+      <input
+        className="form-input"
+        placeholder="Title"
+        onChange={(e) => SetTitle(e.target.value)}
+      />
+      <textarea
+        className="form-textarea"
+        placeholder="Say something... (optional)"
+        rows={2}
+        onChange={(e) => SetDesc(e.target.value)}
+      />
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setNewPhoto(e.target.files[0])}
+      />
+      <div className="star-rating">
+        {Array(5).fill(0).map((_, i) => (
+          <StarIcon
+            key={i}
+            style={{
+              color: i < (hoverRating || newRating) ? 'gold' : 'lightgray',
+              cursor: 'pointer',
+              fontSize: 32
+            }}
+            onClick={() => setNewRating(i + 1)}
+            onMouseEnter={() => setHoverRating(i + 1)}
+            onMouseLeave={() => setHoverRating(0)}
           />
-        ) : (
-          <>
-            {!showWelcome && (
-              <>
-                <button className="btn login" onClick={() => setShowLogin(true)}>Log In</button>
-                <button className="btn register" onClick={() => setShowRegister(true)}>Register</button>
-              </>
-            )}
-          </>
-        )}
-        {showLogin && <Login onClose={() => setShowLogin(false)} setCurrentUser={setCurrentUser} setUserLocation={setUserLocation} />}
-        {showRegister && <Register onClose={() => setShowRegister(false)} />}
-        {showLoginAlert && (
-          <div className="login-alert">
-            Please log in to add a pin.
-          </div>
-        )}
+        ))}
       </div>
-
-      {myLocation && (
-        <button className="center-me-btn" onClick={handleCenterMe}>
-          <PinDropIcon style={{ fontSize: 22, color: '#4285f4' }} />
+      <div className="bottom-actions">
+        <button type="submit" className="form-btn">Add Pin</button>
+        <button
+          type="button"
+          className="cancel-btn"
+          onClick={() => {
+            setShowMobileForm(false);
+            setNewPlace(null);
+            setPreviewPin(null);
+          }}
+        >
+          Cancel
         </button>
-      )}
-      
+      </div>
+    </form>
+  </div>
+)}
+        <div className="nav-buttons">
+          {currentUser ? (
+            <Settings
+              currentUser={currentUser}
+              onLogout={handleLogout}
+              setUserLocation={setUserLocation}
+            />
+          ) : (
+            <>
+              {!showWelcome && (
+                <>
+                  <button className="btn login" onClick={() => setShowLogin(true)}>Log In</button>
+                  <button className="btn register" onClick={() => setShowRegister(true)}>Register</button>
+                </>
+              )}
+            </>
+          )}
+          {showLogin && <Login onClose={() => setShowLogin(false)} setCurrentUser={setCurrentUser} setUserLocation={setUserLocation} />}
+          {showRegister && <Register onClose={() => setShowRegister(false)} />}
+          {showLoginAlert && (
+            <div className="login-alert">
+              Please log in to add a pin.
+            </div>
+          )}
+        </div>
+
+        {myLocation && (
+          <button className="center-me-btn" onClick={handleCenterMe}>
+            <PinDropIcon style={{ fontSize: 22, color: '#4285f4' }} />
+          </button>
+        )}
+
       </Map>
 
       <Sidebar
@@ -361,12 +459,12 @@ const handleCenterMe = () => {
       />
 
       {showWelcome && (
-    <Welcome
-        setCurrentUser={setCurrentUser}
-        setUserLocation={setUserLocation}
-        onGuest={() => setShowWelcome(false)}
-    />
-    )}
+        <Welcome
+          setCurrentUser={setCurrentUser}
+          setUserLocation={setUserLocation}
+          onGuest={() => setShowWelcome(false)}
+        />
+      )}
 
     </div>
   );
