@@ -307,7 +307,7 @@ input[type="file"]::file-selector-button:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 60%;
+  height: 30%;
   background: white;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;

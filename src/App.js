@@ -10,6 +10,7 @@ import Sidebar from "./components/Sidebar";
 import Settings from "./components/Settings";
 import PinDropIcon from '@mui/icons-material/PinDrop';
 import Welcome from "./components/Welcome";
+import AddLocationIcon from '@mui/icons-material/AddLocation';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -37,6 +38,7 @@ function App() {
   const [myLocation, setMyLocation] = useState(null);
   const [showWelcome, setShowWelcome] = useState(!localStorage.getItem("user"));
   const [showMobileForm, setShowMobileForm] = useState(false);
+  const [previewPin, setPreviewPin] = useState(null);
 
   const [userLocation, setUserLocation] = useState(() => {
     const lat = localStorage.getItem("userLat");
@@ -111,18 +113,23 @@ function App() {
   };
 
   const handleAddClick = (e) => {
-    e.preventDefault();
-    if (!currentUser) {
-      setShowLoginAlert(true);
-      setTimeout(() => setShowLoginAlert(false), 3000);
-      return;
-    }
-    const { lng, lat } = e.lngLat;
-    setNewPlace({ long: lng, lat: lat });
-    if (isMobile) {
-      setShowMobileForm(true);
-    }
-  };
+  e.preventDefault();
+
+  if (!currentUser) {
+    setShowLoginAlert(true);
+    setTimeout(() => setShowLoginAlert(false), 3000);
+    return;
+  }
+
+  const { lng, lat } = e.lngLat;
+
+  setNewPlace({ long: lng, lat });
+  setPreviewPin({ long: lng, lat });
+
+  if (isMobile) {
+    setShowMobileForm(true);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -253,7 +260,13 @@ function App() {
             </Marker>
           </React.Fragment>
         ))}
-
+        {previewPin && (
+          <Marker longitude={previewPin.long} latitude={previewPin.lat} anchor="bottom">
+            <div className="preview-pin">
+              <AddLocationIcon style={{ fontSize: viewState.zoom * 3, color: 'blue' }} /> 
+            </div>
+          </Marker>
+        )}
         {myLocation && (
           <Marker longitude={myLocation.long} latitude={myLocation.lat} anchor="center">
             <div className="my-location-dot" />
