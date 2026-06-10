@@ -318,48 +318,58 @@ function App() {
         )}
 
         {showMobileForm && newPlace && isMobile && (
-          <div className="bottom-sheet">
-            <form className="bottom-sheet-form" onSubmit={handleSubmit}>
-              <h3>Add a Pin</h3>
-
-              <input
-                className="form-input"
-                placeholder="Title"
-                onChange={(e) => SetTitle(e.target.value)}
-              />
-
-              <textarea
-                className="form-textarea"
-                placeholder="Say something..."
-                rows={3}
-                onChange={(e) => SetDesc(e.target.value)}
-              />
-
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setNewPhoto(e.target.files[0])}
-              />
-
-              <div className="bottom-actions">
-                <button type="submit" className="form-btn">
-                  Add Pin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMobileForm(false);
-                    setNewPlace(null);
-                    setPreviewPin(null);
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
+  <div className="bottom-sheet">
+    <div className="bottom-sheet-handle" />
+    <form className="bottom-sheet-form" onSubmit={handleSubmit}>
+      <h3>📍 Add a Pin</h3>
+      <input
+        className="form-input"
+        placeholder="Title"
+        onChange={(e) => SetTitle(e.target.value)}
+      />
+      <textarea
+        className="form-textarea"
+        placeholder="Say something... (optional)"
+        rows={2}
+        onChange={(e) => SetDesc(e.target.value)}
+      />
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setNewPhoto(e.target.files[0])}
+      />
+      <div className="star-rating">
+        {Array(5).fill(0).map((_, i) => (
+          <StarIcon
+            key={i}
+            style={{
+              color: i < (hoverRating || newRating) ? 'gold' : 'lightgray',
+              cursor: 'pointer',
+              fontSize: 32
+            }}
+            onClick={() => setNewRating(i + 1)}
+            onMouseEnter={() => setHoverRating(i + 1)}
+            onMouseLeave={() => setHoverRating(0)}
+          />
+        ))}
+      </div>
+      <div className="bottom-actions">
+        <button type="submit" className="form-btn">Add Pin</button>
+        <button
+          type="button"
+          className="cancel-btn"
+          onClick={() => {
+            setShowMobileForm(false);
+            setNewPlace(null);
+            setPreviewPin(null);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+)}
         <div className="nav-buttons">
           {currentUser ? (
             <Settings
