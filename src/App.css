@@ -301,3 +301,40 @@ input[type="file"]::file-selector-button:hover {
 .center-me-btn:hover {
     transform: scale(1.08);
 }
+
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60%;
+  background: white;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -2px 20px rgba(0,0,0,0.2);
+  z-index: 9999;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.bottom-sheet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bottom-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.mapboxgl-canvas {
+  touch-action: pan-x pan-y;
+}
+
+.bottom-sheet {
+  max-height: 70vh;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}

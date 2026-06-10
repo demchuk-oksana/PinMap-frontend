@@ -23,8 +23,7 @@ function App() {
   const [newRating, setNewRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const mapRef = useRef(null);
-  const isMobile =
-  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("user") || null);
   const [pins, setPins] = useState([]);
   const [newPlace, setNewPlace] = useState(null);
@@ -37,21 +36,25 @@ function App() {
   const [newPhoto, setNewPhoto] = useState(null);
   const [editPhoto, setEditPhoto] = useState(null);
   const [allComments, setAllComments] = useState([]);
+  const [myLocation, setMyLocation] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(!localStorage.getItem("user"));
+  const [showMobileForm, setShowMobileForm] = useState(false);
+
   const [userLocation, setUserLocation] = useState(() => {
     const lat = localStorage.getItem("userLat");
     const long = localStorage.getItem("userLong");
-    return lat && long ? { lat: parseFloat(lat), long: parseFloat(long) } : null;})
-  const [myLocation, setMyLocation] = useState(null);
+    return lat && long ? { lat: parseFloat(lat), long: parseFloat(long) } : null;
+  })
+
   const [viewState, setViewState] = useState(() => {
     const lat = localStorage.getItem("userLat");
     const long = localStorage.getItem("userLong");
     return {
-        latitude: lat ? parseFloat(lat) : 20,
-        longitude: long ? parseFloat(long) : 0,
-        zoom: lat ? 14 : 2,
+      latitude: lat ? parseFloat(lat) : 20,
+      longitude: long ? parseFloat(long) : 0,
+      zoom: lat ? 14 : 2,
     };
-});
-  const [showWelcome, setShowWelcome] = useState(!localStorage.getItem("user"));
+  });
 
 
 
@@ -85,30 +88,29 @@ function App() {
     getData();
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-            setMyLocation({
-                lat: pos.coords.latitude,
-                long: pos.coords.longitude,
-            });
-        },
-        (err) => console.log("Geolocation error:", err),
-        { enableHighAccuracy: true }
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-}, []);
-
-const handleCenterMe = () => {
-    if (myLocation) {
-        mapRef.current?.flyTo({
-            center: [myLocation.long, myLocation.lat],
-            zoom: 15,
-            duration: 1000,
+      (pos) => {
+        setMyLocation({
+          lat: pos.coords.latitude,
+          long: pos.coords.longitude,
         });
+      },
+      (err) => console.log("Geolocation error:", err),
+      { enableHighAccuracy: true }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  const handleCenterMe = () => {
+    if (myLocation) {
+      mapRef.current?.flyTo({
+        center: [myLocation.long, myLocation.lat],
+        zoom: 15,
+        duration: 1000,
+      });
     }
-};
+  };
 
   const handleAddClick = (e) => {
     e.preventDefault();
@@ -119,6 +121,9 @@ const handleCenterMe = () => {
     }
     const { lng, lat } = e.lngLat;
     setNewPlace({ long: lng, lat: lat });
+    if (isMobile) {
+      setShowMobileForm(true);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -152,6 +157,8 @@ const handleCenterMe = () => {
     } catch (err) {
       console.log(err);
     }
+    setShowMobileForm(false);
+    setNewPlace(null);
   };
 
   const handleLogout = () => {
@@ -160,7 +167,7 @@ const handleCenterMe = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("userLat");
     localStorage.removeItem("userLong");
-};
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this pin?")) return;
@@ -220,9 +227,10 @@ const handleCenterMe = () => {
         dragRotate={false}
         onClick={(e) => {
           setSelectedPin(null);
-
           if (isMobile) {
-            handleAddClick(e);
+            if (!showMobileForm) {
+              handleAddClick(e);
+            }
           } else {
             setNewPlace(null);
           }
@@ -254,7 +262,7 @@ const handleCenterMe = () => {
           </Marker>
         )}
 
-        {newPlace && (
+        {newPlace && !isMobile && (
           <Popup
             longitude={newPlace.long}
             latitude={newPlace.lat}
@@ -265,66 +273,103 @@ const handleCenterMe = () => {
           >
             <form className="new-pin-form" onSubmit={handleSubmit}>
               <h3>Add a Pin</h3>
-              <input className="form-input" placeholder="Title" onChange={(e) => SetTitle(e.target.value)} />
-              <textarea className="form-textarea" placeholder="Say something about this place..." rows={3} onChange={(e) => SetDesc(e.target.value)} />
+
               <input
                 className="form-input"
+                placeholder="Title"
+                onChange={(e) => SetTitle(e.target.value)}
+              />
+
+              <textarea
+                className="form-textarea"
+                placeholder="Say something..."
+                rows={3}
+                onChange={(e) => SetDesc(e.target.value)}
+              />
+
+              <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setNewPhoto(e.target.files[0])}
               />
-              <div className="star-rating">
-                {Array(5).fill(0).map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    style={{
-                      color: i < (hoverRating || newRating) ? 'gold' : 'lightgray',
-                      cursor: 'pointer',
-                      fontSize: 28
-                    }}
-                    onClick={() => setNewRating(i + 1)}
-                    onMouseEnter={() => setHoverRating(i + 1)}
-                    onMouseLeave={() => setHoverRating(0)}
-                  />
-                ))}
-              </div>
-              <button className="form-btn" type="submit">Add Pin</button>
+
+              <button type="submit">Add Pin</button>
             </form>
           </Popup>
         )}
 
-         <div className="nav-buttons">
-        {currentUser ? (
-          <Settings
-            currentUser={currentUser}
-            onLogout={handleLogout}
-            setUserLocation={setUserLocation}
-          />
-        ) : (
-          <>
-            {!showWelcome && (
-              <>
-                <button className="btn login" onClick={() => setShowLogin(true)}>Log In</button>
-                <button className="btn register" onClick={() => setShowRegister(true)}>Register</button>
-              </>
-            )}
-          </>
-        )}
-        {showLogin && <Login onClose={() => setShowLogin(false)} setCurrentUser={setCurrentUser} setUserLocation={setUserLocation} />}
-        {showRegister && <Register onClose={() => setShowRegister(false)} />}
-        {showLoginAlert && (
-          <div className="login-alert">
-            Please log in to add a pin.
+        {showMobileForm && newPlace && isMobile && (
+          <div className="bottom-sheet">
+            <form className="bottom-sheet-form" onSubmit={handleSubmit}>
+              <h3>Add a Pin</h3>
+
+              <input
+                className="form-input"
+                placeholder="Title"
+                onChange={(e) => SetTitle(e.target.value)}
+              />
+
+              <textarea
+                className="form-textarea"
+                placeholder="Say something..."
+                rows={3}
+                onChange={(e) => SetDesc(e.target.value)}
+              />
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setNewPhoto(e.target.files[0])}
+              />
+
+              <div className="bottom-actions">
+                <button type="submit">Add Pin</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMobileForm(false);
+                    setNewPlace(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         )}
-      </div>
 
-      {myLocation && (
-        <button className="center-me-btn" onClick={handleCenterMe}>
-          <PinDropIcon style={{ fontSize: 22, color: '#4285f4' }} />
-        </button>
-      )}
-      
+        <div className="nav-buttons">
+          {currentUser ? (
+            <Settings
+              currentUser={currentUser}
+              onLogout={handleLogout}
+              setUserLocation={setUserLocation}
+            />
+          ) : (
+            <>
+              {!showWelcome && (
+                <>
+                  <button className="btn login" onClick={() => setShowLogin(true)}>Log In</button>
+                  <button className="btn register" onClick={() => setShowRegister(true)}>Register</button>
+                </>
+              )}
+            </>
+          )}
+          {showLogin && <Login onClose={() => setShowLogin(false)} setCurrentUser={setCurrentUser} setUserLocation={setUserLocation} />}
+          {showRegister && <Register onClose={() => setShowRegister(false)} />}
+          {showLoginAlert && (
+            <div className="login-alert">
+              Please log in to add a pin.
+            </div>
+          )}
+        </div>
+
+        {myLocation && (
+          <button className="center-me-btn" onClick={handleCenterMe}>
+            <PinDropIcon style={{ fontSize: 22, color: '#4285f4' }} />
+          </button>
+        )}
+
       </Map>
 
       <Sidebar
@@ -353,12 +398,12 @@ const handleCenterMe = () => {
       />
 
       {showWelcome && (
-    <Welcome
-        setCurrentUser={setCurrentUser}
-        setUserLocation={setUserLocation}
-        onGuest={() => setShowWelcome(false)}
-    />
-    )}
+        <Welcome
+          setCurrentUser={setCurrentUser}
+          setUserLocation={setUserLocation}
+          onGuest={() => setShowWelcome(false)}
+        />
+      )}
 
     </div>
   );
