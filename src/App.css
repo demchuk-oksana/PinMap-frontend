@@ -94,6 +94,15 @@
   z-index: 20;
 }
 
+.mapboxgl-map,
+.mapboxgl-canvas {
+  -webkit-touch-callout: none;
+}
+
+.mapboxgl-canvas {
+  touch-action: manipulation;
+}
+
 .btn {
   padding: 8px 16px;
   border: none;
