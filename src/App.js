@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Map, { Marker, Popup } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import RoomIcon from '@mui/icons-material/Room';
-import StarIcon from '@mui/icons-material/Star';
 import './App.css';
 import axios from 'axios';
 import Register from './components/Register';
@@ -21,7 +20,6 @@ function App() {
   const [title, SetTitle] = useState("");
   const [desc, SetDesc] = useState("");
   const [newRating, setNewRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
   const mapRef = useRef(null);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("user") || null);
