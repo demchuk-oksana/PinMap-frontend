@@ -415,6 +415,13 @@ input[type="file"]::file-selector-button:hover {
   font-family: inherit;
 }
 
+@media (max-width: 768px) {
+  .bottom-sheet-form .form-input,
+  .bottom-sheet-form .form-textarea {
+    font-size: 16px;
+  }
+}
+
 .bottom-sheet-form .form-input:focus,
 .bottom-sheet-form .form-textarea:focus {
   border-color: slateblue;

@@ -239,11 +239,15 @@ function App() {
           if (isMobile) {
             if (!showMobileForm) {
               handleAddClick(e);
+            } else {
+              setShowMobileForm(false);
+              setNewPlace(null);
+              setPreviewPin(null);
             }
           } else {
             setNewPlace(null);
+            setPreviewPin(null);
           }
-          setPreviewPin(null);
         }}
         onContextMenu={isMobile ? undefined : handleAddClick}
       >
