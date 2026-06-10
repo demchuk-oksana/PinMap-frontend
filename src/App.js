@@ -11,6 +11,8 @@ import Settings from "./components/Settings";
 import PinDropIcon from '@mui/icons-material/PinDrop';
 import Welcome from "./components/Welcome";
 import EditLocationIcon from '@mui/icons-material/EditLocation';
+import StarIcon from '@mui/icons-material/Star';
+
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -21,6 +23,7 @@ function App() {
   const [title, SetTitle] = useState("");
   const [desc, SetDesc] = useState("");
   const [newRating, setNewRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const mapRef = useRef(null);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("user") || null);
@@ -309,7 +312,21 @@ function App() {
                 accept="image/*"
                 onChange={(e) => setNewPhoto(e.target.files[0])}
               />
-
+              <div className="star-rating">
+                  {Array(5).fill(0).map((_, i) => (
+                    <StarIcon
+                      key={i}
+                      style={{
+                        color: i < (hoverRating || newRating) ? 'gold' : 'lightgray',
+                        cursor: 'pointer',
+                        fontSize: 28
+                      }}
+                      onClick={() => setNewRating(i + 1)}
+                      onMouseEnter={() => setHoverRating(i + 1)}
+                      onMouseLeave={() => setHoverRating(0)}
+                    />
+                  ))}
+              </div>
               <button type="submit" className="form-btn">
                 Add Pin
               </button>
@@ -321,7 +338,7 @@ function App() {
   <div className="bottom-sheet">
     <div className="bottom-sheet-handle" />
     <form className="bottom-sheet-form" onSubmit={handleSubmit}>
-      <h3>📍 Add a Pin</h3>
+      <h3> Add a Pin</h3>
       <input
         className="form-input"
         placeholder="Title"

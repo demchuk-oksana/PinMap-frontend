@@ -269,7 +269,7 @@
 }
 
 input[type="file"] {
-  font-size: 16px;
+  font-size: 13px;
   color: #555;
   cursor: pointer;
 }
@@ -281,7 +281,7 @@ input[type="file"]::file-selector-button {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
     transition: background 0.2s;
 }
@@ -406,7 +406,7 @@ input[type="file"]::file-selector-button:hover {
 
 .bottom-sheet-form .form-input,
 .bottom-sheet-form .form-textarea {
-  font-size: 16px;
+  font-size: 13px;
   padding: 12px 14px;
   border: 1px solid rgba(0,0,0,0.1);
   border-radius: 12px;
