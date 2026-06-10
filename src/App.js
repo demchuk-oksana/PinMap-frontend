@@ -51,7 +51,7 @@ function App() {
 });
   const [showWelcome, setShowWelcome] = useState(!localStorage.getItem("user"));
   const longPressTimer = useRef(null);
-
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const handleTouchStart = (e) => {
     longPressTimer.current = setTimeout(() => {
         const touch = e.touches[0];
@@ -231,9 +231,12 @@ const handleCenterMe = () => {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchMove={() => clearTimeout(longPressTimer.current)}
-        onClick={() => {
+        onClick={(e) => {
           setSelectedPin(null);
           setNewPlace(null);
+          if (isMobile && currentUser) {
+            handleAddClick(e);
+          }
         }}
         onContextMenu={handleAddClick}
       >
