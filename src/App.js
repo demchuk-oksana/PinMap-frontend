@@ -129,8 +129,13 @@ function App() {
   setNewPlace({ long: lng, lat });
   setPreviewPin({ long: lng, lat });
 
-  if (isMobile) {
+   if (isMobile) {
     setShowMobileForm(true);
+    mapRef.current?.flyTo({
+      center: [lng, lat],
+      offset: [0, -100],
+      duration: 500,
+    });
   }
 };
 
@@ -273,7 +278,10 @@ function App() {
         {previewPin && (
           <Marker longitude={previewPin.long} latitude={previewPin.lat} anchor="bottom">
             <div className="preview-pin">
-              <EditLocationIcon className="preview-pin-icon" /> 
+              <EditLocationIcon
+                className="preview-pin-icon"
+                style={{ fontSize: viewState.zoom * 3, color: 'slateblue' }}
+              />
             </div>
           </Marker>
         )}
