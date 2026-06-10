@@ -31,6 +31,7 @@
     font-style: italic;
     margin-right: auto;
     padding-left: 2px;
+    
 }
 
 .stars {
@@ -44,6 +45,9 @@
     color: #555;
     line-height: 1.6;
     font-style: italic;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .comment-date {

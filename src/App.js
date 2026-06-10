@@ -10,7 +10,7 @@ import Sidebar from "./components/Sidebar";
 import Settings from "./components/Settings";
 import PinDropIcon from '@mui/icons-material/PinDrop';
 import Welcome from "./components/Welcome";
-import AddLocationIcon from '@mui/icons-material/AddLocation';
+import EditLocationIcon from '@mui/icons-material/EditLocation';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -159,11 +159,12 @@ function App() {
       SetDesc("");
       setNewRating(0);
       setNewPhoto(null);
+      setNewPlace(null);
+      setPreviewPin(null);
+      setShowMobileForm(false);
     } catch (err) {
       console.log(err);
     }
-    setShowMobileForm(false);
-    setNewPlace(null);
   };
 
   const handleLogout = () => {
@@ -239,6 +240,7 @@ function App() {
           } else {
             setNewPlace(null);
           }
+          setPreviewPin(null);
         }}
         onContextMenu={isMobile ? undefined : handleAddClick}
       >
@@ -246,8 +248,9 @@ function App() {
           <React.Fragment key={p._id}>
             <Marker longitude={p.long} latitude={p.lat} anchor="bottom">
               <RoomIcon
-                style={{ fontSize: viewState.zoom * 3, color: 'slateblue', cursor: 'pointer' }}
-                onClick={(e) => {
+                  style={{ fontSize: viewState.zoom * 3, color: 'slateblue', cursor: 'pointer' }}
+                  className={selectedPin?._id === p._id ? 'pin-selected' : ''}
+                  onClick={(e) => {
                   e.stopPropagation();
                   setSelectedPin(p);
                   setEditingPin(null);
@@ -263,7 +266,7 @@ function App() {
         {previewPin && (
           <Marker longitude={previewPin.long} latitude={previewPin.lat} anchor="bottom">
             <div className="preview-pin">
-              <AddLocationIcon style={{ fontSize: viewState.zoom * 3, color: 'blue' }} /> 
+              <EditLocationIcon className="preview-pin-icon" /> 
             </div>
           </Marker>
         )}
@@ -274,13 +277,16 @@ function App() {
         )}
 
         {newPlace && !isMobile && (
-          <Popup
+          <Popup 
             longitude={newPlace.long}
             latitude={newPlace.lat}
             anchor="left"
             closeButton={true}
             closeOnClick={false}
-            onClose={() => setNewPlace(null)}
+            onClose={() => {
+              setNewPlace(null);
+              setPreviewPin(null);
+            }}
           >
             <form className="new-pin-form" onSubmit={handleSubmit}>
               <h3>Add a Pin</h3>
@@ -304,7 +310,9 @@ function App() {
                 onChange={(e) => setNewPhoto(e.target.files[0])}
               />
 
-              <button type="submit">Add Pin</button>
+              <button type="submit" className="form-btn">
+                Add Pin
+              </button>
             </form>
           </Popup>
         )}
@@ -334,12 +342,15 @@ function App() {
               />
 
               <div className="bottom-actions">
-                <button type="submit">Add Pin</button>
+                <button type="submit" className="form-btn">
+                  Add Pin
+                </button>
                 <button
                   type="button"
                   onClick={() => {
                     setShowMobileForm(false);
                     setNewPlace(null);
+                    setPreviewPin(null);
                   }}
                 >
                   Cancel

@@ -58,6 +58,7 @@
 .photo-gallery {
     position: relative;
     width: 100%;
+    flex-shrink: 0;
 }
 .gallery-photo {
     width: 100%;
@@ -65,6 +66,7 @@
     object-fit: cover;
     display: block;
     cursor: pointer;
+    flex-shrink: 0;
 }
 .gallery-arrow {
     position: absolute;
