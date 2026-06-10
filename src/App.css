@@ -81,13 +81,6 @@
   font-size: 14px;
 }
 
-.form-input,
-.form-textarea,
-input[type="file"] {
-  font-size: 16px;
-}
-
-
 .form-btn:hover {
   background-color: #5a4fcf;
 }
